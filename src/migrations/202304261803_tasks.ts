@@ -8,7 +8,12 @@ export async function up(knex: Knex): Promise<void> {
     table.string('title');
     table.text('description');
     table.integer('order').notNullable();
-    table.uuid('column_id');
+    table
+      .uuid('column_id')
+      .references('id')
+      .inTable('columns')
+      .onUpdate('CASCADE')
+      .onDelete('CASCADE');
   });
 }
 

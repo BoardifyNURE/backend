@@ -48,36 +48,6 @@ export class BoardsService {
     }
   }
 
-  async update(id: string, board: Partial<Board>): Promise<Board> {
-    const [updatedBoard] = await this.queryBuilder()
-      .where('id', id)
-      .update(board)
-      .returning('*');
-    return updatedBoard;
-  }
-
-  async delete(dto: DeleteBoardDto, userId: string): Promise<void> {
-    await this.verifyUserBoardAccess(userId, dto.board_id);
-
-    const trx = await db.transaction();
-    try {
-      await this.queryBuilder()
-        .transacting(trx)
-        .where('id', dto.board_id)
-        .delete();
-      await this.boardsUsersService
-        .queryBuilder()
-        .transacting(trx)
-        .where('board_id', dto.board_id)
-        .delete();
-
-      await trx.commit();
-    } catch (error) {
-      await trx.rollback();
-      throw error;
-    }
-  }
-
   async addUsersToBoard(dto: AddUsersToBoardDto, userWhoAddsId: string) {
     await this.verifyUserBoardAccess(userWhoAddsId, dto.board_id);
 
@@ -122,6 +92,19 @@ export class BoardsService {
       await trx.rollback();
       throw error;
     }
+  }
+
+  async update(id: string, board: Partial<Board>): Promise<Board> {
+    const [updatedBoard] = await this.queryBuilder()
+      .where('id', id)
+      .update(board)
+      .returning('*');
+    return updatedBoard;
+  }
+
+  async delete(dto: DeleteBoardDto, userId: string): Promise<void> {
+    await this.verifyUserBoardAccess(userId, dto.board_id);
+    await this.queryBuilder().where('id', dto.board_id).delete();
   }
 
   async verifyUserBoardAccess(userId: string, boardId: string) {

@@ -7,7 +7,12 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('title');
     table.integer('order').notNullable();
-    table.uuid('board_id');
+    table
+      .uuid('board_id')
+      .references('id')
+      .inTable('boards')
+      .onUpdate('CASCADE')
+      .onDelete('CASCADE');
   });
 }
 

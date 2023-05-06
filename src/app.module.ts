@@ -6,7 +6,7 @@ import { UsersModule } from './users/users.module';
 import { BoardsModule } from './boards/boards.module';
 import { ColumnsModule } from './columns/columns.module';
 import { TasksModule } from './tasks/tasks.module';
-import { ChecklistsModule } from './checklists/checklists.module';
+import { TodosModule } from './todos/todos.module';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { ChecklistsModule } from './checklists/checklists.module';
     BoardsModule,
     ColumnsModule,
     TasksModule,
-    ChecklistsModule,
+    TodosModule,
   ],
   controllers: [AppController],
 })

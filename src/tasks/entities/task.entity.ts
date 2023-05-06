@@ -1,4 +1,4 @@
-import { Checklist } from '../../checklists/entities/checklist.entity';
+import { Todo } from '../../todos/entities/todo.entity';
 import { Column } from '../../columns/entities/column.entity';
 
 export class Task {
@@ -9,5 +9,5 @@ export class Task {
   column_id: string;
 
   column?: Column;
-  checklists?: Checklist[];
+  todos?: Todo[];
 }

@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { Knex } from 'knex';
 
 import { db } from '../db';
 import { Task } from './entities/task.entity';
@@ -7,17 +8,38 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { DeleteTaskDto } from './dto/delete-task.dto';
 import { ColumnsService } from '../columns/columns.service';
 import { BoardsService } from '../boards/boards.service';
-import { Knex } from 'knex';
 
 @Injectable()
 export class TasksService {
   constructor(
-    private columnsService: ColumnsService,
     private boardsService: BoardsService,
+    private columnsService: ColumnsService,
   ) {}
 
-  private queryBuilder() {
+  queryBuilder() {
     return db<Task>('tasks');
+  }
+
+  async findTasksInColumn(columnId: string, userId: string): Promise<Task[]> {
+    await this.columnsService.verifyUserColumnAccess(userId, columnId);
+
+    return await this.queryBuilder()
+      .where('column_id', columnId)
+      .orderBy('order');
+  }
+
+  async findTasksInBoard(boardId: string, userId: string): Promise<Task[]> {
+    await this.boardsService.verifyUserBoardAccess(userId, boardId);
+
+    const boardColumns = await this.columnsService
+      .queryBuilder()
+      .where('board_id', boardId);
+    return await this.queryBuilder()
+      .whereIn(
+        'column_id',
+        boardColumns.map((column) => column.id),
+      )
+      .orderBy([{ column: 'column_id' }, { column: 'order' }]);
   }
 
   private async shiftTasksOrder(
@@ -78,27 +100,6 @@ export class TasksService {
         );
       }
     }
-  }
-
-  async findTasksInColumn(columnId: string, userId: string): Promise<Task[]> {
-    await this.columnsService.verifyUserColumnAccess(userId, columnId);
-    return await this.queryBuilder()
-      .where('column_id', columnId)
-      .orderBy('order');
-  }
-
-  async findTasksInBoard(boardId: string, userId: string): Promise<Task[]> {
-    await this.boardsService.verifyUserBoardAccess(userId, boardId);
-
-    const boardColumns = await this.columnsService
-      .queryBuilder()
-      .where('board_id', boardId);
-    return await this.queryBuilder()
-      .whereIn(
-        'column_id',
-        boardColumns.map((column) => column.id),
-      )
-      .orderBy([{ column: 'column_id' }, { column: 'order' }]);
   }
 
   async create(dto: CreateTaskDto, userId: string): Promise<Task> {
@@ -197,26 +198,33 @@ export class TasksService {
   }
 
   async delete(dto: DeleteTaskDto, userId: string): Promise<void> {
-    const task = await this.queryBuilder().where('id', dto.task_id).first();
-    await this.columnsService.verifyUserColumnAccess(userId, task.column_id);
+    await this.verifyUserTaskAccess(userId, dto.task_id);
 
     const trx = await db.transaction();
     try {
+      const task = await this.queryBuilder().where('id', dto.task_id).first();
+
       await this.queryBuilder()
         .transacting(trx)
         .where('column_id', task.column_id)
         .andWhere('order', '>', task.order)
         .decrement('order', 1);
 
-      await this.queryBuilder()
-        .transacting(trx)
-        .where('id', dto.task_id)
-        .delete();
+      await this.queryBuilder().transacting(trx).where('id', task.id).delete();
 
       await trx.commit();
     } catch (error) {
       await trx.rollback();
       throw error;
     }
+  }
+
+  async verifyUserTaskAccess(userId: string, taskId: string): Promise<void> {
+    const task = await this.queryBuilder().where('id', taskId).first();
+    if (!task) {
+      throw new BadRequestException(`Task with ID "${taskId}" not found`);
+    }
+
+    await this.columnsService.verifyUserColumnAccess(userId, task.column_id);
   }
 }

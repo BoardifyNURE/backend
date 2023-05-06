@@ -11,9 +11,11 @@ export const db = knex({
     user: config.db.user,
     password: config.db.password,
     database: config.db.name,
-    ssl: {
-      rejectUnauthorized: false,
-    },
+    ssl: config.db.useSSL
+      ? {
+          rejectUnauthorized: false,
+        }
+      : undefined,
   },
   migrations: {
     tableName: 'knex_migrations',

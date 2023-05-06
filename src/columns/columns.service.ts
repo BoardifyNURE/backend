@@ -133,7 +133,7 @@ export class ColumnsService {
 
       await this.queryBuilder()
         .transacting(trx)
-        .where('id', dto.column_id)
+        .where('id', column.id)
         .delete();
 
       await trx.commit();

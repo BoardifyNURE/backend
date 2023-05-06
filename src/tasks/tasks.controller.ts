@@ -32,12 +32,24 @@ import { DeleteTaskDto } from './dto/delete-task.dto';
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
-  @Get(':columnId')
+  @Get('board/:boardId')
   @UseGuards(UserGuard)
-  @ApiOperation({ summary: 'Find all tasks for a given column' })
+  @ApiOperation({ summary: 'Find all tasks in a given board' })
+  @ApiParam({ name: 'boardId', type: String, required: true })
+  @ApiResponse({ status: 200, type: [Task] })
+  findTasksInBoard(
+    @Param('boardId') boardId: string,
+    @CurrentUser() user: User,
+  ): Promise<Task[]> {
+    return this.tasksService.findTasksInBoard(boardId, user.id);
+  }
+
+  @Get('column/:columnId')
+  @UseGuards(UserGuard)
+  @ApiOperation({ summary: 'Find all tasks in a given column' })
   @ApiParam({ name: 'columnId', type: String, required: true })
   @ApiResponse({ status: 200, type: [Task] })
-  findAll(
+  findTasksInColumn(
     @Param('columnId') columnId: string,
     @CurrentUser() user: User,
   ): Promise<Task[]> {

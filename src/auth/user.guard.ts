@@ -1,8 +1,14 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { UsersService } from '../users/users.service';
 import { config } from '../config';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class UserGuard implements CanActivate {
@@ -11,16 +17,20 @@ export class UserGuard implements CanActivate {
     private readonly jwtService: JwtService,
   ) {}
 
+  throwUnauthorized() {
+    throw new UnauthorizedException();
+  }
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader: string = request.headers.authorization;
     if (!authHeader) {
-      return false;
+      this.throwUnauthorized();
     }
 
     const [bearer, token] = authHeader.split(' ');
     if (bearer.toLowerCase() !== 'bearer' || !token) {
-      return false;
+      this.throwUnauthorized();
     }
 
     try {
@@ -28,21 +38,20 @@ export class UserGuard implements CanActivate {
         secret: config.jwt.secret,
       });
       if (!payload) {
-        return false;
+        this.throwUnauthorized();
       }
 
       const user = await this.usersService.findOneSanitized({
         email: payload.email,
       });
       if (!user) {
-        return false;
+        this.throwUnauthorized();
       }
 
       request.user = user;
       return true;
     } catch (error) {
-      console.error(error);
-      return false;
+      throw error;
     }
   }
 }

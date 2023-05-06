@@ -1,13 +1,19 @@
 import { Knex } from 'knex';
 
-const TABLE_NAME = 'checklists_items';
+const TABLE_NAME = 'todos';
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable(TABLE_NAME, (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.string('content');
-    table.boolean('is_checked');
-    table.uuid('checklist_id');
+    table.integer('order').notNullable();
+    table.boolean('is_done');
+    table
+      .uuid('task_id')
+      .references('id')
+      .inTable('tasks')
+      .onUpdate('CASCADE')
+      .onDelete('CASCADE');
   });
 }
 
