@@ -82,12 +82,15 @@ export class TasksController {
     return this.tasksService.update(taskId, updateTaskDto, user.id);
   }
 
-  @Delete()
+  @Delete(':taskId')
   @UseGuards(UserGuard)
   @ApiOperation({ summary: 'Delete a task' })
   @ApiBody({ type: DeleteTaskDto })
   @ApiResponse({ status: 204 })
-  delete(@Body() dto: DeleteTaskDto, @CurrentUser() user: User): Promise<void> {
-    return this.tasksService.delete(dto, user.id);
+  delete(
+    @Param('taskId') taskId: string,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    return this.tasksService.delete(taskId, user.id);
   }
 }

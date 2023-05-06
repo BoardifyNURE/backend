@@ -116,14 +116,12 @@ export class ColumnsService {
     }
   }
 
-  async delete(dto: DeleteColumnDto, userId: string): Promise<void> {
-    await this.verifyUserColumnAccess(userId, dto.column_id);
+  async delete(columnId: string, userId: string): Promise<void> {
+    await this.verifyUserColumnAccess(userId, columnId);
 
     const trx = await db.transaction();
     try {
-      const column = await this.queryBuilder()
-        .where('id', dto.column_id)
-        .first();
+      const column = await this.queryBuilder().where('id', columnId).first();
 
       await this.queryBuilder()
         .transacting(trx)

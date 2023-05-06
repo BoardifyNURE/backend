@@ -52,6 +52,18 @@ export class BoardsController {
     return this.boardsService.create(createBoardDto, user.id);
   }
 
+  @Post('add-users-to-board')
+  @UseGuards(UserGuard)
+  @ApiOperation({ summary: 'Add users to a board' })
+  @ApiBody({ type: AddUsersToBoardDto })
+  @ApiResponse({ status: 204 })
+  async addUsersToBoard(
+    @Body() dto: AddUsersToBoardDto,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    await this.boardsService.addUsersToBoard(dto, user.id);
+  }
+
   @Put(':id')
   @UseGuards(UserGuard)
   @ApiOperation({ summary: 'Update a board' })
@@ -65,27 +77,15 @@ export class BoardsController {
     return this.boardsService.update(id, board);
   }
 
-  @Delete()
+  @Delete(':boardId')
   @UseGuards(UserGuard)
   @ApiOperation({ summary: 'Delete a board' })
   @ApiBody({ type: DeleteBoardDto })
   @ApiResponse({ status: 204 })
   delete(
-    @Body() dto: DeleteBoardDto,
+    @Param('boardId') boardId: string,
     @CurrentUser() user: User,
   ): Promise<void> {
-    return this.boardsService.delete(dto, user.id);
-  }
-
-  @Post('add-users-to-board')
-  @UseGuards(UserGuard)
-  @ApiOperation({ summary: 'Add users to a board' })
-  @ApiBody({ type: AddUsersToBoardDto })
-  @ApiResponse({ status: 204 })
-  async addUsersToBoard(
-    @Body() dto: AddUsersToBoardDto,
-    @CurrentUser() user: User,
-  ): Promise<void> {
-    await this.boardsService.addUsersToBoard(dto, user.id);
+    return this.boardsService.delete(boardId, user.id);
   }
 }

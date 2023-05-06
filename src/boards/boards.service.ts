@@ -102,9 +102,9 @@ export class BoardsService {
     return updatedBoard;
   }
 
-  async delete(dto: DeleteBoardDto, userId: string): Promise<void> {
-    await this.verifyUserBoardAccess(userId, dto.board_id);
-    await this.queryBuilder().where('id', dto.board_id).delete();
+  async delete(boardId: string, userId: string): Promise<void> {
+    await this.verifyUserBoardAccess(userId, boardId);
+    await this.queryBuilder().where('id', boardId).delete();
   }
 
   async verifyUserBoardAccess(userId: string, boardId: string) {

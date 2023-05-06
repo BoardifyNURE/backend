@@ -70,15 +70,15 @@ export class ColumnsController {
     return this.columnsService.update(updateColumnDto, columnId, user.id);
   }
 
-  @Delete()
+  @Delete(':columnId')
   @UseGuards(UserGuard)
   @ApiOperation({ summary: 'Delete a column' })
   @ApiBody({ type: DeleteColumnDto })
   @ApiResponse({ status: 204 })
   delete(
-    @Body() dto: DeleteColumnDto,
+    @Param('columnId') columnId: string,
     @CurrentUser() user: User,
   ): Promise<void> {
-    return this.columnsService.delete(dto, user.id);
+    return this.columnsService.delete(columnId, user.id);
   }
 }

@@ -197,12 +197,12 @@ export class TasksService {
     }
   }
 
-  async delete(dto: DeleteTaskDto, userId: string): Promise<void> {
-    await this.verifyUserTaskAccess(userId, dto.task_id);
+  async delete(taskId: string, userId: string): Promise<void> {
+    await this.verifyUserTaskAccess(userId, taskId);
 
     const trx = await db.transaction();
     try {
-      const task = await this.queryBuilder().where('id', dto.task_id).first();
+      const task = await this.queryBuilder().where('id', taskId).first();
 
       await this.queryBuilder()
         .transacting(trx)
