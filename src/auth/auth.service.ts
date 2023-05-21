@@ -5,7 +5,6 @@ import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UsersService } from '../users/users.service';
-import { UserSanitizedDto } from '../users/dto/user-sanitized.dto';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +13,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<UserSanitizedDto> {
+  async register(registerDto: RegisterDto) {
     const emailExists = await this.usersService.findOne({
       email: registerDto.email,
     });
@@ -31,16 +30,20 @@ export class AuthService {
 
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(registerDto.password, salt);
-    return await this.usersService.create({
+    await this.usersService.create({
       first_name: registerDto.firstName,
       last_name: registerDto.lastName,
       email: registerDto.email,
       username: registerDto.username,
       password_hash: passwordHash,
     });
+
+    return await this.usersService.findOneSanitized({
+      email: registerDto.email,
+    });
   }
 
-  async login(loginDto: LoginDto): Promise<{ accessToken: string }> {
+  async login(loginDto: LoginDto) {
     const user = await this.usersService.findOne({
       email: loginDto.email,
     });
@@ -57,7 +60,7 @@ export class AuthService {
     }
 
     const payload = { email: user.email };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '1d' });
     return { accessToken };
   }
 }

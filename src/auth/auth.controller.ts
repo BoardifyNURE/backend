@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { UserGuard } from './user.guard';
@@ -12,11 +12,15 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from './current-user.decorator';
 import { User } from '../users/entities/user.entity';
+import { UsersService } from '../users/users.service';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post('/login')
   @ApiOperation({ summary: 'Authenticate user' })
@@ -32,11 +36,13 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
-  @Post('/user')
+  @Get('/user')
   @UseGuards(UserGuard)
-  @ApiOperation({ summary: 'Test authentication guard' })
+  @ApiOperation({ summary: 'Get current user' })
   @ApiBearerAuth()
   async testGuard(@CurrentUser() user: User) {
-    return user;
+    return await this.usersService.findOneSanitized({
+      id: user.id,
+    });
   }
 }
