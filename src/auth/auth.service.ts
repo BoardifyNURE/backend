@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
-import { RegisterDto } from './dto/register.dto';
+import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { UsersService } from '../users/users.service';
 
@@ -13,33 +13,33 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async signUp(signUpDto: SignUpDto) {
     const emailExists = await this.usersService.findOne({
-      email: registerDto.email,
+      email: signUpDto.email,
     });
     if (emailExists) {
       throw new BadRequestException('Email already exists');
     }
 
     const usernameExists = await this.usersService.findOne({
-      username: registerDto.username,
+      username: signUpDto.username,
     });
     if (usernameExists) {
       throw new BadRequestException('Username already exists');
     }
 
     const salt = await bcrypt.genSalt();
-    const passwordHash = await bcrypt.hash(registerDto.password, salt);
+    const passwordHash = await bcrypt.hash(signUpDto.password, salt);
     await this.usersService.create({
-      first_name: registerDto.firstName,
-      last_name: registerDto.lastName,
-      email: registerDto.email,
-      username: registerDto.username,
+      first_name: signUpDto.firstName,
+      last_name: signUpDto.lastName,
+      email: signUpDto.email,
+      username: signUpDto.username,
       password_hash: passwordHash,
     });
 
     return await this.usersService.findOneSanitized({
-      email: registerDto.email,
+      email: signUpDto.email,
     });
   }
 

@@ -3,7 +3,7 @@ import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserGuard } from './user.guard';
 import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
+import { SignUpDto } from './dto/signup.dto';
 import {
   ApiTags,
   ApiResponse,
@@ -23,17 +23,17 @@ export class AuthController {
   ) {}
 
   @Post('/login')
-  @ApiOperation({ summary: 'Authenticate user' })
+  @ApiOperation({ summary: 'Login' })
   @ApiResponse({ status: 200, description: 'User authenticated successfully' })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
-  @Post('/register')
-  @ApiOperation({ summary: 'Register user' })
-  @ApiResponse({ status: 201, description: 'User registered successfully' })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  @Post('/signup')
+  @ApiOperation({ summary: 'Sign up' })
+  @ApiResponse({ status: 201, description: 'User signed up successfully' })
+  async signUp(@Body() signUpDto: SignUpDto) {
+    return this.authService.signUp(signUpDto);
   }
 
   @Get('/user')
