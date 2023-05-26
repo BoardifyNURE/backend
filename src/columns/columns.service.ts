@@ -4,7 +4,6 @@ import { db } from '../db';
 import { Column } from './entities/column.entity';
 import { CreateColumnDto } from './dto/create-column.dto';
 import { UpdateColumnDto } from './dto/update-column.dto';
-import { DeleteColumnDto } from './dto/delete-column.dto';
 import { BoardsService } from '../boards/boards.service';
 
 @Injectable()

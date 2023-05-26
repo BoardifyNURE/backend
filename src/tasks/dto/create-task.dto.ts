@@ -19,6 +19,11 @@ export class CreateTaskDto {
   title: string;
 
   @IsOptional()
+  @IsUUID()
+  @ApiPropertyOptional()
+  assignee_id?: string;
+
+  @IsOptional()
   @IsInt()
   @ApiPropertyOptional()
   order?: number;

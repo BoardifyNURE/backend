@@ -1,7 +1,19 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsOptional, IsString, IsUUID } from 'class-validator';
+
 export class FindUserDto {
+  @IsOptional()
+  @IsUUID()
+  @ApiPropertyOptional()
   id?: string;
-  first_name?: string;
-  last_name?: string;
+
+  @IsOptional()
+  @IsEmail()
+  @ApiPropertyOptional()
   email?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional()
   username?: string;
 }

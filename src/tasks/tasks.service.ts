@@ -5,15 +5,19 @@ import { db } from '../db';
 import { Task } from './entities/task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { DeleteTaskDto } from './dto/delete-task.dto';
 import { ColumnsService } from '../columns/columns.service';
 import { BoardsService } from '../boards/boards.service';
+import { UsersService } from '../users/users.service';
+import { BoardsUsersService } from '../boards/boards-users.service';
+import { TaskStatus } from './enums/task-status.enum';
 
 @Injectable()
 export class TasksService {
   constructor(
     private boardsService: BoardsService,
+    private boardsUsersService: BoardsUsersService,
     private columnsService: ColumnsService,
+    private usersService: UsersService,
   ) {}
 
   queryBuilder() {
@@ -102,11 +106,73 @@ export class TasksService {
     }
   }
 
+  private readonly taskStatusMapping = {
+    [TaskStatus.ToDo]: [
+      TaskStatus.InProgress,
+      TaskStatus.Done,
+      TaskStatus.Cancelled,
+    ],
+    [TaskStatus.InProgress]: [
+      TaskStatus.ReadyForTesting,
+      TaskStatus.Done,
+      TaskStatus.Cancelled,
+    ],
+    [TaskStatus.ReadyForTesting]: [
+      TaskStatus.TestingFailed,
+      TaskStatus.TestingSucceded,
+      TaskStatus.Done,
+      TaskStatus.Cancelled,
+    ],
+    [TaskStatus.TestingFailed]: [
+      TaskStatus.Fixing,
+      TaskStatus.Done,
+      TaskStatus.Cancelled,
+    ],
+    [TaskStatus.Fixing]: [
+      TaskStatus.ReadyForTesting,
+      TaskStatus.Done,
+      TaskStatus.Cancelled,
+    ],
+    [TaskStatus.TestingSucceded]: [TaskStatus.Done, TaskStatus.Cancelled],
+    [TaskStatus.Done]: [TaskStatus.ToDo],
+    [TaskStatus.Cancelled]: [TaskStatus.ToDo],
+  };
+  async getAvailableNewStatusesForTask(taskId: string) {
+    const task = await this.queryBuilder().where('id', taskId).first();
+    if (!task) {
+      throw new BadRequestException(`Task with ID "${taskId}" not found`);
+    }
+
+    return this.taskStatusMapping[task.status];
+  }
+
   async create(dto: CreateTaskDto, userId: string): Promise<Task> {
     await this.columnsService.verifyUserColumnAccess(userId, dto.column_id);
 
     const trx = await db.transaction();
     try {
+      if (dto.assignee_id) {
+        const user = await this.usersService.findOne({ id: dto.assignee_id });
+        if (!user) {
+          throw new BadRequestException(
+            `User with ID "${dto.assignee_id}" not found`,
+          );
+        }
+
+        const column = await this.columnsService
+          .queryBuilder()
+          .where('id', dto.column_id)
+          .first();
+
+        await this.boardsUsersService.create(
+          {
+            board_id: column.board_id,
+            user_id: dto.assignee_id,
+          },
+          trx,
+        );
+      }
+
       const task = new Task();
       task.column_id = dto.column_id;
 
@@ -180,6 +246,38 @@ export class TasksService {
         await this.shiftTasksOrder(dto.column_id, dto.order, 100, true, trx);
       } else if (dto.order !== undefined && dto.order !== task.order) {
         await this.handleOrderChange(task, dto, trx);
+      }
+
+      if (
+        dto.status &&
+        dto.status !== task.status &&
+        !this.taskStatusMapping[task.status].includes(dto.status)
+      ) {
+        throw new BadRequestException(
+          `You can't change status of this task to "${dto.status}"`,
+        );
+      }
+
+      if (dto.assignee_id) {
+        const user = await this.usersService.findOne({ id: dto.assignee_id });
+        if (!user) {
+          throw new BadRequestException(
+            `User with ID "${dto.assignee_id}" not found`,
+          );
+        }
+
+        const column = await this.columnsService
+          .queryBuilder()
+          .where('id', task.column_id)
+          .first();
+
+        await this.boardsUsersService.create(
+          {
+            board_id: column.board_id,
+            user_id: dto.assignee_id,
+          },
+          trx,
+        );
       }
 
       const [updatedTask] = await this.queryBuilder()

@@ -25,8 +25,8 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 
-@ApiTags('todos')
 @ApiBearerAuth()
+@ApiTags('todos')
 @Controller('todos')
 export class TodosController {
   constructor(private readonly todoService: TodosService) {}

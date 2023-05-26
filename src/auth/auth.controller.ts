@@ -14,7 +14,7 @@ import { CurrentUser } from './current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 
-@ApiTags('Auth')
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -40,7 +40,7 @@ export class AuthController {
   @UseGuards(UserGuard)
   @ApiOperation({ summary: 'Get current user' })
   @ApiBearerAuth()
-  async testGuard(@CurrentUser() user: User) {
+  async getCurrentUser(@CurrentUser() user: User) {
     return await this.usersService.findOneSanitized({
       id: user.id,
     });

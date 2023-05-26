@@ -6,7 +6,7 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { BoardsUsersService } from './boards-users.service';
 import { AddUsersToBoardDto } from './dto/add-users-to-board.dto';
 import { UsersService } from '../users/users.service';
-import { DeleteBoardDto } from './dto/delete-board.dto';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class BoardsService {
@@ -24,6 +24,14 @@ export class BoardsService {
       .innerJoin('boards_users', 'boards_users.board_id', '=', 'boards.id')
       .where('boards_users.user_id', userId)
       .select('boards.*');
+  }
+
+  async findBoardUsers(boardId: string): Promise<User[]> {
+    return await this.usersService
+      .queryBuilder()
+      .join('boards_users', 'users.id', '=', 'boards_users.user_id')
+      .where('boards_users.board_id', boardId)
+      .select(['id', 'first_name', 'last_name', 'email', 'username']);
   }
 
   async create(dto: CreateBoardDto, userId: string): Promise<Board> {

@@ -15,6 +15,11 @@ export class BoardsUsersService {
     dto: CreateBoardUserDto,
     trx?: Knex.Transaction,
   ): Promise<BoardUser> {
+    const existingBoardUser = await this.queryBuilder().where(dto).first();
+    if (existingBoardUser) {
+      return existingBoardUser;
+    }
+
     const query = this.queryBuilder();
     if (trx) {
       query.transacting(trx);

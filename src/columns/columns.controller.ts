@@ -24,11 +24,10 @@ import { UserGuard } from '../auth/user.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { UpdateColumnDto } from './dto/update-column.dto';
-import { DeleteColumnDto } from './dto/delete-column.dto';
 
+@ApiBearerAuth()
 @ApiTags('columns')
 @Controller('columns')
-@ApiBearerAuth()
 export class ColumnsController {
   constructor(private readonly columnsService: ColumnsService) {}
 
@@ -73,7 +72,6 @@ export class ColumnsController {
   @Delete(':columnId')
   @UseGuards(UserGuard)
   @ApiOperation({ summary: 'Delete a column' })
-  @ApiBody({ type: DeleteColumnDto })
   @ApiResponse({ status: 204 })
   delete(
     @Param('columnId') columnId: string,

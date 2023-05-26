@@ -23,12 +23,11 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { UserGuard } from '../auth/user.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { User } from '../users/entities/user.entity';
-import { DeleteBoardDto } from './dto/delete-board.dto';
 import { AddUsersToBoardDto } from './dto/add-users-to-board.dto';
 
+@ApiBearerAuth()
 @ApiTags('boards')
 @Controller('boards')
-@ApiBearerAuth()
 export class BoardsController {
   constructor(private readonly boardsService: BoardsService) {}
 
@@ -38,6 +37,19 @@ export class BoardsController {
   @ApiResponse({ status: 200, type: [Board] })
   findUserBoards(@CurrentUser() user: User): Promise<Board[]> {
     return this.boardsService.findUserBoards(user.id);
+  }
+
+  @Get(':boardId/users')
+  @UseGuards(UserGuard)
+  @ApiOperation({ summary: 'Get users that have access to a board' })
+  @ApiParam({ name: 'boardId', type: String, required: true })
+  @ApiResponse({ status: 200, type: [User] })
+  async getBoardUsers(
+    @Param('boardId') boardId: string,
+    @CurrentUser() user: User,
+  ): Promise<User[]> {
+    await this.boardsService.verifyUserBoardAccess(user.id, boardId);
+    return this.boardsService.findBoardUsers(boardId);
   }
 
   @Post()
@@ -80,7 +92,6 @@ export class BoardsController {
   @Delete(':boardId')
   @UseGuards(UserGuard)
   @ApiOperation({ summary: 'Delete a board' })
-  @ApiBody({ type: DeleteBoardDto })
   @ApiResponse({ status: 204 })
   delete(
     @Param('boardId') boardId: string,

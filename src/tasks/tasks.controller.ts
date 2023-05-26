@@ -24,11 +24,10 @@ import { UserGuard } from '../auth/user.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { DeleteTaskDto } from './dto/delete-task.dto';
 
+@ApiBearerAuth()
 @ApiTags('tasks')
 @Controller('tasks')
-@ApiBearerAuth()
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
@@ -54,6 +53,17 @@ export class TasksController {
     @CurrentUser() user: User,
   ): Promise<Task[]> {
     return this.tasksService.findTasksInColumn(columnId, user.id);
+  }
+
+  @Get(':taskId/available-statuses')
+  @UseGuards(UserGuard)
+  @ApiOperation({ summary: 'Get available new statuses for a task' })
+  @ApiParam({ name: 'taskId', type: String, required: true })
+  @ApiResponse({ status: 200, type: [String] })
+  async getAvailableNewStatusesForTask(
+    @Param('taskId') taskId: string,
+  ): Promise<string[]> {
+    return this.tasksService.getAvailableNewStatusesForTask(taskId);
   }
 
   @Post()
@@ -85,7 +95,6 @@ export class TasksController {
   @Delete(':taskId')
   @UseGuards(UserGuard)
   @ApiOperation({ summary: 'Delete a task' })
-  @ApiBody({ type: DeleteTaskDto })
   @ApiResponse({ status: 204 })
   delete(
     @Param('taskId') taskId: string,
