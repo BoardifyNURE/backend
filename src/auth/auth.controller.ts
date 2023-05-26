@@ -13,6 +13,7 @@ import {
 import { CurrentUser } from './current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import { RecaptchaGuard } from './recaptcha.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -23,6 +24,7 @@ export class AuthController {
   ) {}
 
   @Post('/login')
+  @UseGuards(RecaptchaGuard)
   @ApiOperation({ summary: 'Login' })
   @ApiResponse({ status: 200, description: 'User authenticated successfully' })
   async login(@Body() loginDto: LoginDto) {
