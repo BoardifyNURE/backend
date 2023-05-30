@@ -3,7 +3,6 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 

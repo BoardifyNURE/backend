@@ -1,11 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsNotEmpty,
-  IsOptional,
-  IsUUID,
-  Validate,
-} from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 
 export class AddUserToBoardIdentification {
   @IsOptional()
