@@ -9,6 +9,7 @@ import { migrate } from './db';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: true,
+    snapshot: true, // for Nest.js devtools
   });
 
   app.useGlobalPipes(new ValidationPipe());

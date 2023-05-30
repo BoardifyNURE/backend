@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { DevtoolsModule } from '@nestjs/devtools-integration';
 
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
@@ -16,6 +17,7 @@ import { TodosModule } from './todos/todos.module';
     ColumnsModule,
     TasksModule,
     TodosModule,
+    DevtoolsModule.register({ http: true }),
   ],
   controllers: [AppController],
 })
