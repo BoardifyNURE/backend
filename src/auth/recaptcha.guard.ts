@@ -4,10 +4,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-
-import { RecaptchaEnterpriseServiceClient } from '@google-cloud/recaptcha-enterprise';
-
-const reCaptchaClient = new RecaptchaEnterpriseServiceClient();
+import axios from 'axios';
 
 @Injectable()
 export class RecaptchaGuard implements CanActivate {
@@ -23,17 +20,22 @@ export class RecaptchaGuard implements CanActivate {
     }
 
     try {
-      const response = await reCaptchaClient.createAssessment({
-        parent: reCaptchaClient.projectPath('gitlam'),
-        assessment: {
+      const response = await axios.post(
+        'https://recaptchaenterprise.googleapis.com/v1/projects/gitlam/assessments',
+        {
           event: {
             token: reCaptchaToken,
             siteKey: '6LfIPj8mAAAAAHtAQd7PdX2NML5j0idnWIr_2dup',
           },
         },
-      });
+        {
+          params: {
+            key: 'AIzaSyAgq0C2aFDK2JGR6OsZBdxxwMz9G03PE_A',
+          },
+        },
+      );
 
-      console.log(response);
+      console.log(response.data);
 
       return true;
     } catch (error) {
