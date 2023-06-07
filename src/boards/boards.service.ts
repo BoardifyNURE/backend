@@ -82,10 +82,9 @@ export class BoardsService {
 
         const userToAdd = await this.usersService.findOne(userIdentification);
         if (!userToAdd) {
+          const key = Object.keys(userIdentification)[0];
           throw new BadRequestException(
-            `Item #${index} in users identifications list (${JSON.stringify(
-              userIdentification,
-            )}) doesn't relate to any user in the DB`,
+            `User with ${key} ${userIdentification[key]} not found`,
           );
         }
 
