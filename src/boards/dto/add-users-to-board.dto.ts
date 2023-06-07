@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator';
 
 export class AddUserToBoardIdentification {
   @IsOptional()
@@ -7,6 +15,7 @@ export class AddUserToBoardIdentification {
   user_id?: string;
 
   @IsOptional()
+  @IsEmail()
   @ApiPropertyOptional()
   email?: string;
 
@@ -23,6 +32,8 @@ export class AddUsersToBoardDto {
 
   @IsNotEmpty()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AddUserToBoardIdentification)
   @ApiProperty({ type: [AddUserToBoardIdentification] })
   users_identifications: AddUserToBoardIdentification[];
 }
